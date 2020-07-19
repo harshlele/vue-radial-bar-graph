@@ -48,12 +48,24 @@ export default {
                     d3.arc().innerRadius(yScale(this.graphLabels[i])).outerRadius(yScale(this.graphLabels[i]) + yScale.bandwidth()).startAngle(0).endAngle(1.5*Math.PI)
                 ).attr("fill","#f1f1f1");
 
-                group.append("path").attr(
+                let valGroup = group.append('g');
+                valGroup.append("text")
+                        .attr("dx",-10)
+                        .attr("dy",yScale(this.graphLabels[i]) - this.cY - yScale.bandwidth())
+                        .attr("text-anchor","end")
+                        .attr("fill",colorScale(val))
+                        .attr("font-size",yScale.bandwidth())
+                        .text(this.graphLabels[i] + ": " + this.graphValues[i]);
+                
+                valGroup.append("path").attr(
                     "d",
                     d3.arc().innerRadius(yScale(this.graphLabels[i])).outerRadius(yScale(this.graphLabels[i]) + yScale.bandwidth()).startAngle(0).endAngle(radialScale(val))
                 ).attr("fill", colorScale(val));  
             }
         );
+
+        console.log(radialScale(50));
+        console.log(radialScale(100));
         
 
     }   
