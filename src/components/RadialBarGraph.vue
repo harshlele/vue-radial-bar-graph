@@ -1,4 +1,5 @@
 <template>
+    
     <svg :width="svgWidth + 'px'" :height="svgHeight + 'px'" :id="id"></svg>
 </template>
 
@@ -9,7 +10,10 @@ export default {
 
     name:"RadialBarGraph",
     props:{
-        width: Number,
+        width: {
+            type: Number,
+            default: 300
+        },
         values: {
             type: Array,
             required: true
@@ -18,56 +22,100 @@ export default {
             type: Array,
             required: true
         },
-        colorScale: Array
+        colorScale: {
+            type: Array,
+            default: () => ["#4FC3F7","#0277BD"]
+        }
     },
     data: function(){
         return {
-            svgWidth: this.width ? this.width : 300,
-            svgHeight: this.width ? this.width : 300,
+            svgWidth: this.width,
+            svgHeight: this.width,
             id: "radialbargraph" + parseInt(Math.random()*100),
-            cX: this.width ? (this.width/2) : 150,
-            cY: this.width ? (this.width/2) : 150,
+            cX: this.width/2,
+            cY: this.width/2,
             graphValues: this.values,
             graphLabels: this.labels,
-            graphColorScale: this.colorScale ? this.colorScale : ["#4FC3F7","#0277BD"]
+            graphColorScale: this.colorScale
         }
     },
     mounted(){
+        this.drawChart();
+        d3.select("body")
+            .append("div")
+            .attr("id",this.id+"tooltip")
+            .style("opacity", 0)
+            .attr("class", "tooltip")
+            .style("background-color", "white")
+            .style("font-family","sans-serif")
+            .style("border", "1px solid gray")
+            .style("padding", "5px")
+            .style("position","absolute")
+            .style("z-index","10")
+            .text("this is a test");
+    },
 
-        let radialScale = d3.scaleLinear().domain([0,Math.max(...this.graphValues)*1.1]).range([0,(Math.PI * 1.5)]);
-        let yScale = d3.scaleBand().paddingInner(0.2).domain(this.graphLabels).range([this.cY*0.2,(this.cY)*0.95]);
-        let colorScale = d3.scaleLinear().domain([0,Math.max(...this.graphValues)]).range(this.graphColorScale);
+    methods: {
+        drawChart(){
 
-        const svg = d3.select("#" + this.id); 
-        
-        const group = svg.append("g").attr("transform",`translate(${this.cX},${this.cY})`);
+            const radialScale = d3.scaleLinear().domain([0,Math.max(...this.graphValues)*1.1]).range([0,(Math.PI * 1.5)]);
+            const yScale = d3.scaleBand().paddingInner(0.2).domain(this.graphLabels).range([this.cY*0.2,(this.cY)*0.95]);
+            const colorScale = d3.scaleLinear().domain([0,Math.max(...this.graphValues)]).range(this.graphColorScale);
 
-        this.graphValues.forEach((val,i) => {
-                group.append("path").attr(
-                    "d",
-                    d3.arc().innerRadius(yScale(this.graphLabels[i])).outerRadius(yScale(this.graphLabels[i]) + yScale.bandwidth()).startAngle(0).endAngle(1.5*Math.PI)
-                ).attr("fill","#f1f1f1");
+            const svg = d3.select("#" + this.id); 
+            svg.selectAll("*").remove();
 
-                let valGroup = group.append('g');
-                valGroup.append("text")
-                        .attr("dx",-10)
-                        .attr("dy",yScale(this.graphLabels[i]) - this.cY - yScale.bandwidth())
-                        .attr("text-anchor","end")
-                        .attr("fill",colorScale(val))
-                        .attr("font-size",yScale.bandwidth())
-                        .text(this.graphLabels[i] + ": " + this.graphValues[i]);
-                
-                valGroup.append("path").attr(
-                    "d",
-                    d3.arc().innerRadius(yScale(this.graphLabels[i])).outerRadius(yScale(this.graphLabels[i]) + yScale.bandwidth()).startAngle(0).endAngle(radialScale(val))
-                ).attr("fill", colorScale(val));  
-            }
-        );
+            const group = svg.append("g").attr("transform",`translate(${this.cX},${this.cY})`);
 
-        console.log(radialScale(50));
-        console.log(radialScale(100));
-        
+            let sum = d3.sum(this.graphValues);
 
-    }   
+            this.graphValues.forEach((val,i) => {
+                    group.append("path").attr(
+                        "d",
+                        d3.arc().innerRadius(yScale(this.graphLabels[i])).outerRadius(yScale(this.graphLabels[i]) + yScale.bandwidth()).startAngle(0).endAngle(1.5*Math.PI)
+                    ).attr("fill","#f1f1f1");
+
+                    let valGroup = group.append('g').attr("class","entry");
+                    valGroup.append("text")
+                            .attr("dx",-10)
+                            .attr("dy",yScale(this.graphLabels[this.graphLabels.length - i - 1]) - this.cY - yScale.bandwidth())
+                            .attr("text-anchor","end")
+                            .attr("font-family","sans-serif")
+                            .attr("fill",colorScale(val))
+                            .attr("font-size",yScale.bandwidth())
+                            .text(this.graphLabels[i] + ": " + val);
+                    
+                    valGroup.append("path").attr(
+                        "d",
+                        d3.arc().innerRadius(yScale(this.graphLabels[i])).outerRadius(yScale(this.graphLabels[i]) + yScale.bandwidth()).startAngle(0).endAngle(radialScale(val))
+                    ).attr("fill", colorScale(val));  
+
+                    valGroup.on("mouseover",() => {
+                        let tooltipText = this.graphLabels[i] + ": " + val + " (" + (val/sum * 100).toFixed(2) + "%)";
+                        d3.select("#"+this.id+"tooltip").style("opacity",1).style("top",(d3.event.pageY + 10) + "px").style("left",(d3.event.pageX + 10) + "px").text(tooltipText);
+                    });
+                    valGroup.on("mouseleave",() => {
+                        d3.select("#"+this.id+"tooltip").style("opacity",0);
+                    });
+                    valGroup.on("mousemove",() => {
+                        let tooltipText = this.graphLabels[i] + ": " + val + " (" + (val/sum * 100).toFixed(2) + "%)";
+                        d3.select("#"+this.id+"tooltip").style("top",(d3.event.pageY + 10) + "px").style("left",(d3.event.pageX + 10) + "px").text(tooltipText);
+                    });
+                }
+            );
+
+        }
+    },
+
+    watch:{
+        labels(newVal){
+            this.graphLabels = newVal;
+            this.drawChart();
+        },
+        values(newVal){
+            this.graphValues = newVal;
+            this.drawChart();
+        }
+    }
 }
 </script>
