@@ -1,6 +1,9 @@
 <template>
+    <div :style="`width: ${width}px; height: ${width}px; text-align:center;`">
+        <div class="title-text">{{title}}</div>
+        <svg :width="svgWidth + 'px'" :height="svgHeight + 'px'" :id="id" style="margin: auto;"></svg>
+    </div>
     
-    <svg :width="svgWidth + 'px'" :height="svgHeight + 'px'" :id="id"></svg>
 </template>
 
 <script>
@@ -25,18 +28,25 @@ export default {
         colorScale: {
             type: Array,
             default: () => ["#4FC3F7","#0277BD"]
-        }
+        },
+        title:String
     },
     data: function(){
         return {
-            svgWidth: this.width,
-            svgHeight: this.width,
+            svgWidth: this.width * 0.9,
+            svgHeight: this.width * 0.9,
             id: "radialbargraph" + parseInt(Math.random()*100),
-            cX: this.width/2,
-            cY: this.width/2,
+            cX: this.width * 0.45,
+            cY: this.width * 0.45,
             graphValues: this.values,
             graphLabels: this.labels,
-            graphColorScale: this.colorScale
+            graphColorScale: this.colorScale,
+            yScale: null,
+        }
+    },
+    computed:{
+        headerFontSize(){
+            return parseInt(this.yScale.bandwidth() * 1.2);
         }
     },
     mounted(){
@@ -59,7 +69,7 @@ export default {
         drawChart(){
 
             const radialScale = d3.scaleLinear().domain([0,Math.max(...this.graphValues)*1.1]).range([0,(Math.PI * 1.5)]);
-            const yScale = d3.scaleBand().paddingInner(0.2).domain(this.graphLabels).range([this.cY*0.2,(this.cY)*0.95]);
+            this.yScale = d3.scaleBand().paddingInner(0.2).domain(this.graphLabels).range([this.cY*0.2,(this.cY)*0.95]);
             const colorScale = d3.scaleLinear().domain([0,Math.max(...this.graphValues)]).range(this.graphColorScale);
 
             const svg = d3.select("#" + this.id); 
@@ -72,22 +82,22 @@ export default {
             this.graphValues.forEach((val,i) => {
                     group.append("path").attr(
                         "d",
-                        d3.arc().innerRadius(yScale(this.graphLabels[i])).outerRadius(yScale(this.graphLabels[i]) + yScale.bandwidth()).startAngle(0).endAngle(1.5*Math.PI)
+                        d3.arc().innerRadius(this.yScale(this.graphLabels[i])).outerRadius(this.yScale(this.graphLabels[i]) + this.yScale.bandwidth()).startAngle(0).endAngle(1.5*Math.PI)
                     ).attr("fill","#f1f1f1");
 
                     let valGroup = group.append('g').attr("class","entry");
                     valGroup.append("text")
                             .attr("dx",-10)
-                            .attr("dy",yScale(this.graphLabels[this.graphLabels.length - i - 1]) - this.cY - yScale.bandwidth())
+                            .attr("dy",this.yScale(this.graphLabels[this.graphLabels.length - i - 1]) - this.cY - this.yScale.bandwidth())
                             .attr("text-anchor","end")
-                            .attr("font-family","sans-serif")
+                            .attr("font-family","'Helvetica Neue', Helvetica, Arial, sans-serif")
                             .attr("fill",colorScale(val))
-                            .attr("font-size",yScale.bandwidth())
+                            .attr("font-size",this.yScale.bandwidth())
                             .text(this.graphLabels[i] + ": " + val);
                     
                     valGroup.append("path").attr(
                         "d",
-                        d3.arc().innerRadius(yScale(this.graphLabels[i])).outerRadius(yScale(this.graphLabels[i]) + yScale.bandwidth()).startAngle(0).endAngle(radialScale(val))
+                        d3.arc().innerRadius(this.yScale(this.graphLabels[i])).outerRadius(this.yScale(this.graphLabels[i]) + this.yScale.bandwidth()).startAngle(0).endAngle(radialScale(val))
                     ).attr("fill", colorScale(val));  
 
                     valGroup.on("mouseover",() => {
@@ -119,3 +129,11 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+    .title-text{
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-weight: 400;
+        font-size: 1.2rem;
+    }
+</style>
