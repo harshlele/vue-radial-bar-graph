@@ -29,7 +29,15 @@ export default {
             type: Array,
             default: () => ["#4FC3F7","#0277BD"]
         },
-        title:String
+        title:String,
+        labelText:{
+            type:String,
+            default: 'label: value'
+        },
+        hoverText:{
+            type:String,
+            default: 'label: value (percent)'
+        }
     },
     data: function(){
         return {
@@ -57,10 +65,11 @@ export default {
             .style("opacity", 0)
             .attr("class", "tooltip")
             .style("background-color", "white")
-            .style("font-family","sans-serif")
+            .style("font-family","'Helvetica Neue', Helvetica, Arial, sans-serif")
             .style("border", "1px solid gray")
             .style("padding", "5px")
             .style("position","absolute")
+            .style("color","#6c757d")
             .style("z-index","10")
             .text("this is a test");
     },
@@ -86,6 +95,13 @@ export default {
                     ).attr("fill","#f1f1f1");
 
                     let valGroup = group.append('g').attr("class","entry");
+
+                    let entryLabel = this.labelText;
+                    entryLabel = entryLabel
+                                .replace(new RegExp("label","g"),this.graphLabels[i])
+                                .replace(new RegExp("percent","g"),(val/sum * 100).toFixed(2) + "%")
+                                .replace(new RegExp("value","g"),val);
+
                     valGroup.append("text")
                             .attr("dx",-10)
                             .attr("dy",this.yScale(this.graphLabels[this.graphLabels.length - i - 1]) - this.cY - this.yScale.bandwidth())
@@ -93,23 +109,28 @@ export default {
                             .attr("font-family","'Helvetica Neue', Helvetica, Arial, sans-serif")
                             .attr("fill",colorScale(val))
                             .attr("font-size",this.yScale.bandwidth())
-                            .text(this.graphLabels[i] + ": " + val);
+                            .text(entryLabel);
                     
                     valGroup.append("path").attr(
                         "d",
                         d3.arc().innerRadius(this.yScale(this.graphLabels[i])).outerRadius(this.yScale(this.graphLabels[i]) + this.yScale.bandwidth()).startAngle(0).endAngle(radialScale(val))
                     ).attr("fill", colorScale(val));  
 
+
+                    let entryTooltip = this.hoverText;
+                    entryTooltip = entryTooltip
+                                .replace(new RegExp("label","g"),this.graphLabels[i])
+                                .replace(new RegExp("percent","g"),(val/sum * 100).toFixed(2) + "%")
+                                .replace(new RegExp("value","g"),val);
+
                     valGroup.on("mouseover",() => {
-                        let tooltipText = this.graphLabels[i] + ": " + val + " (" + (val/sum * 100).toFixed(2) + "%)";
-                        d3.select("#"+this.id+"tooltip").style("opacity",1).style("top",(d3.event.pageY + 10) + "px").style("left",(d3.event.pageX + 10) + "px").text(tooltipText);
+                        d3.select("#"+this.id+"tooltip").style("opacity",1).style("top",(d3.event.pageY + 10) + "px").style("left",(d3.event.pageX + 10) + "px").text(entryTooltip);
                     });
                     valGroup.on("mouseleave",() => {
                         d3.select("#"+this.id+"tooltip").style("opacity",0);
                     });
                     valGroup.on("mousemove",() => {
-                        let tooltipText = this.graphLabels[i] + ": " + val + " (" + (val/sum * 100).toFixed(2) + "%)";
-                        d3.select("#"+this.id+"tooltip").style("top",(d3.event.pageY + 10) + "px").style("left",(d3.event.pageX + 10) + "px").text(tooltipText);
+                        d3.select("#"+this.id+"tooltip").style("top",(d3.event.pageY + 10) + "px").style("left",(d3.event.pageX + 10) + "px").text(entryTooltip);
                     });
                 }
             );
@@ -135,5 +156,6 @@ export default {
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
         font-weight: 400;
         font-size: 1.2rem;
+        color: #6c757d;
     }
 </style>
