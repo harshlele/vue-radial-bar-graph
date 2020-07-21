@@ -155,7 +155,7 @@ export default {
     .title-text{
         font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
         font-weight: 400;
-        font-size: 1.2rem;
+        font-size: 1.5vw;
         color: #6c757d;
     }
 </style>
