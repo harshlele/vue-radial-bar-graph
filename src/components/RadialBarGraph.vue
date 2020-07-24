@@ -41,20 +41,15 @@ export default {
     },
     data: function(){
         return {
-            svgWidth: this.width * 0.9,
-            svgHeight: this.width * 0.9,
+            svgWidth: parseInt(this.width * 0.9),
+            svgHeight: parseInt(this.width * 0.9),
             id: "radialbargraph" + parseInt(Math.random()*100),
-            cX: this.width * 0.45,
-            cY: this.width * 0.45,
+            cX: parseInt(this.width * 0.45),
+            cY: parseInt(this.width * 0.45),
             graphValues: this.values,
             graphLabels: this.labels,
             graphColorScale: this.colorScale,
             yScale: null,
-        }
-    },
-    computed:{
-        headerFontSize(){
-            return parseInt(this.yScale.bandwidth() * 1.2);
         }
     },
     mounted(){
@@ -70,15 +65,14 @@ export default {
             .style("padding", "5px")
             .style("position","absolute")
             .style("color","#6c757d")
-            .style("z-index","10")
-            .text("this is a test");
+            .style("z-index","10");
     },
 
     methods: {
         drawChart(){
 
             const radialScale = d3.scaleLinear().domain([0,Math.max(...this.graphValues)*1.1]).range([0,(Math.PI * 1.5)]);
-            this.yScale = d3.scaleBand().paddingInner(0.2).domain(this.graphLabels).range([this.cY*0.2,(this.cY)*0.95]);
+            this.yScale = d3.scaleBand().paddingInner(0.2).domain(this.graphLabels).range([this.cY*0.2,this.cY*0.95]);
             const colorScale = d3.scaleLinear().domain([0,Math.max(...this.graphValues)]).range(this.graphColorScale);
 
             const svg = d3.select("#" + this.id); 
@@ -104,11 +98,11 @@ export default {
 
                     valGroup.append("text")
                             .attr("dx",-10)
-                            .attr("dy",this.yScale(this.graphLabels[this.graphLabels.length - i - 1]) - this.cY - this.yScale.bandwidth())
+                            .attr("dy",this.yScale(this.graphLabels[this.graphLabels.length - i - 1]) - (this.cY * 1.05))
                             .attr("text-anchor","end")
                             .attr("font-family","'Helvetica Neue', Helvetica, Arial, sans-serif")
                             .attr("fill",colorScale(val))
-                            .attr("font-size",this.yScale.bandwidth())
+                            .attr("font-size",(this.yScale.bandwidth() * 0.8))
                             .text(entryLabel);
                     
                     valGroup.append("path").attr(
@@ -153,7 +147,7 @@ export default {
 
 <style scoped>
     .title-text{
-        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-family: Helvetica, Arial, sans-serif;
         font-weight: 400;
         font-size: 1.5vw;
         color: #6c757d;
