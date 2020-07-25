@@ -7,19 +7,24 @@ VueJS component for a simple radial bar graph made using d3
 
 ## How to Use
 
-1. Import component 
+1. Install package
+```
+npm i vue-radial-bargraph
+```
+
+2. Import component 
 ```
 import RadialBarGraph from "vue-radial-bargraph"
 ```
 
-2. Add to components  
+3. Add to components  
 ```
 components:{
     RadialBarGraph
 }
 ```
 
-3. Add element
+4. Add element
 ```
 <radial-bar-graph title="Asset Allocation" :width="400" :labels="['Bonds','Equity','Mutual Funds','GSEC','Real Estate']" :values="[100,200,400,50,600]" labelText="label: value" hoverText="label (percent of total)"/>
 ```
