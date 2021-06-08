@@ -2,7 +2,6 @@
 node_modules
 /dist
 src/components/test.vue
-/lib
 
 # local env files
 .env.local
