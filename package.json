@@ -1,6 +1,6 @@
 {
   "name": "vue-radial-bargraph",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "MIT",
   "main": "./dist/vue-radial-bar-graph.common.js",
   "scripts": {
