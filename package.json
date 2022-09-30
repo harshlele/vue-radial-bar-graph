@@ -24,7 +24,7 @@
     "@vue/cli-service": "~4.4.0",
     "@vue/compiler-sfc": "^3.1.1",
     "babel-eslint": "^10.1.0",
-    "d3": "^5.16.0",
+    "d3": "^7.6.1",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
     "node-sass": "^4.12.0",
